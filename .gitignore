@@ -18,8 +18,4 @@
 ipch/
 Debug/
 Release/
-*.sln
-*.suo
-*.vcxproj
-*.vcxproj.filters
-*.vcxproj.user
+soil/
