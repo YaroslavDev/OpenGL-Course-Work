@@ -4,6 +4,7 @@ AppGLContext::AppGLContext(wxGLCanvas	*canvas)
 	: wxGLContext(canvas),
 	mainFrame(NULL),
 	seabed(NULL),
+	dolphin(NULL),
 	aquaSurf(NULL),
 	sky(NULL)
 {
@@ -24,7 +25,12 @@ AppGLContext::AppGLContext(wxGLCanvas	*canvas)
 	seabed->Create("seabed.obj");
 	seabed->setGLSLProgram(&prog);
 
-	aquaSurf = new AquaSurface("aqua.jpg", "aqua_nrm.png", 10.0f, 80);
+	dolphin = new CMesh();
+	dolphin->Create("Dolphin.obj");
+	dolphin->setGLSLProgram(&prog);
+	dolphinWorld = mat4(1.0f);
+
+	aquaSurf = new AquaSurface("aqua.jpg", "aqua_nrm.png", 4.0f, 80);
 
 	sky = new SkyBox();
 	sky->loadCubeMap("texture/pos_x.jpg",
@@ -44,6 +50,7 @@ AppGLContext::AppGLContext(wxGLCanvas	*canvas)
 AppGLContext::~AppGLContext()
 {
 	SAFE_DELETE(seabed);
+	SAFE_DELETE(dolphin);
 	SAFE_DELETE(aquaSurf);
 	SAFE_DELETE(sky);
 }
@@ -124,6 +131,12 @@ void AppGLContext::setMatrices()
 		seabed->setViewProj(view, projection);
 		seabed->setLightPos(lightPos);
 	}
+	if( dolphin )
+	{
+		dolphin->setWorld(dolphinWorld);
+		dolphin->setViewProj(view, projection);
+		dolphin->setLightPos(lightPos);
+	}
 	if( aquaSurf )
 	{
 		aquaSurf->setViewProj(view, projection);
@@ -156,10 +169,15 @@ void AppGLContext::update(float dt)
 	static float time = 0.0f;
 	time += dt;
 
-	eye_x = 3.0f*cosf(0.25f*time);
-	eye_z = 3.0f*sinf(0.25f*time);
+	eye_x = 1.0f*cosf(0.25f*time);
+	eye_z = 1.0f*sinf(0.25f*time);
 
-	view = glm::lookAt(vec3(eye_x,1.25f,eye_z), vec3(0.0f,0.0f,0.0f), vec3(0.0f,1.0f,0.0f));
+	view = glm::lookAt(vec3(eye_x,0.5f,eye_z), vec3(0.0f,0.0f,0.0f), vec3(0.0f,1.0f,0.0f));
+
+	float a = aquaSurf->getWaveAmplitude(0);
+	float w = aquaSurf->getWaveFrequency(0);
+	float ph = aquaSurf->getWavePhase(0);
+	dolphinWorld[3][1] = a*sinf(time*w + ph);
 
     setMatrices();
 
@@ -193,6 +211,11 @@ void AppGLContext::render()
 		seabed->Render();
 	}
 
+	if( dolphin )
+	{
+		dolphin->Render();
+	}
+
 	if( aquaSurf )
 	{
 		aquaSurf->render();
@@ -208,7 +231,7 @@ void AppGLContext::render()
 
 void AppGLContext::reloadMesh(const char *filepath)
 {
-	seabed->Create(filepath);
+	dolphin->Create(filepath);
 }
 
 //Aqua set methods

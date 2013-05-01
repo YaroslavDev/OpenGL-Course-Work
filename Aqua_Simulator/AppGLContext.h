@@ -45,6 +45,8 @@ private:
 	bool glsl120fallback;
 	GLSLProgram prog;
 	CMesh	*seabed;
+	CMesh	*dolphin;
+	mat4	dolphinWorld;
 	cTexture tex;
 	mat4 model;
 	mat4 view;

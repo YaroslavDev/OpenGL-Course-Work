@@ -26,6 +26,17 @@
 #include <vector>
 #include <string>
 
+/*  Necessary libs:
+
+	wxmsw29ud_gl.lib
+	opengl32.lib
+	glu32.lib
+	glew32.lib
+	soil.lib
+	wxmsw29ud_core.lib
+	wxbase29ud.lib
+*/
+
 #define SAFE_DELETE(x) { if(x) { delete (x); (x)=NULL; } }
 
 #define SAFE_DELETE_ARRAY(x) { if(x) { delete[] (x); (x)=NULL; } }
