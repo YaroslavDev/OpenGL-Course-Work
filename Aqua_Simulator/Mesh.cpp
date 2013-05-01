@@ -13,6 +13,7 @@
 
 //--------------------------------------------------------------------------------------
 CMesh::CMesh()
+	: prog(NULL)
 {
 	meshHandle = NULL;
 
@@ -22,6 +23,9 @@ CMesh::CMesh()
 	rawTexCoords = NULL;
 
     ZeroMemory( m_strMediaDir, sizeof( m_strMediaDir ) );
+
+	world = glm::mat4(1.0f);
+	lightpos = glm::vec4(0.0f, 1.0f, 0.0f, 1.0f);
 }
 
 
@@ -544,6 +548,37 @@ void CMesh::InitMaterial( Material* pMaterial )
 
 void CMesh::Render()
 {
+	if( prog )
+	{
+		prog->use();
+
+		glActiveTexture(GL_TEXTURE0);
+		UINT lastMaterial = GetNumMaterials()-1;
+		glBindTexture(GL_TEXTURE_2D, GetMaterial(lastMaterial)->tex->GetTextureHandle());   
+		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
+		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
+		prog->setUniform("Tex1", 0);
+	
+		prog->setUniform("Light.Intensity", vec3(1.0f, 1.0f, 1.0f));
+		prog->setUniform("Light.Position", lightpos );
+		prog->setUniform("Material.Kd", 0.9f, 0.9f, 0.9f);
+		prog->setUniform("Material.Ks", 0.95f, 0.95f, 0.95f);
+		prog->setUniform("Material.Ka", 0.1f, 0.1f, 0.1f);
+		prog->setUniform("Material.Shininess", 100.0f);
+
+		mat4 mv = view * world;
+		prog->setUniform("ModelViewMatrix", mv);
+		prog->setUniform("NormalMatrix", mat3( vec3(mv[0]), vec3(mv[1]), vec3(mv[2]) ));
+		prog->setUniform("MVP", proj * mv);
+	}
+
 	glBindVertexArray(meshHandle);
 	glDrawElements(GL_TRIANGLES, m_Indices.size(), GL_UNSIGNED_INT, ((GLubyte *)NULL + (0)));
+}
+
+void CMesh::setLightPos(const glm::vec4& lpos)
+{
+	lightpos = lpos;
 }

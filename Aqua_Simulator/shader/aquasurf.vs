@@ -4,52 +4,85 @@ layout (location = 0) in vec3 VertexPosition;
 layout (location = 1) in vec2 VertexTexCoord;
 
 out vec3 Position;
-out vec2 TexCoord;
 out vec3 Normal;
+out vec2 TexCoord;
+out vec3 Tangent;
+out vec3 Binormal;
 
 uniform float dt;
 uniform mat4 MVP;
 
+#define NUM_WAVE_GENS 4
+
+// On/off switched for wave generators
+uniform int active[NUM_WAVE_GENS];// = int[NUM_WAVE_GENS](1, 1, 0, 0);
+
+//Wave centers
+uniform float c_x[NUM_WAVE_GENS];// = float[NUM_WAVE_GENS](0.0f, 1.5f, 0.0f, -2.5f);
+uniform float c_z[NUM_WAVE_GENS];// = float[NUM_WAVE_GENS](0.0f, 0.0f, -2.5f, 0.0f);
+
 // Amplitudes
-float a[2] = float[2](0.1f, 0.05f);
+uniform float a[NUM_WAVE_GENS];// = float[NUM_WAVE_GENS](0.04f, 0.02f, 0.03f, 0.02f);
 	
 // Angular wave numbers.
-float k[2] = float[2](1.0, 8.0f);
+uniform float k[NUM_WAVE_GENS];// = float[NUM_WAVE_GENS](10.0, 7.0f, 10.0f, 10.0f);
 	
 // Angular frequency.
-float w[2] = float[2](4.0f, 8.0f);
+uniform float w[NUM_WAVE_GENS];// = float[NUM_WAVE_GENS](3.0f, 5.0f, 1.0f, 2.0f);
 	
 // Phase shifts.
-float p[2] = float[2](0.0f, 1.0f);
+uniform float p[NUM_WAVE_GENS];// = float[NUM_WAVE_GENS](0.0f, 0.2f, 0.3f, 0.4f);
 
-float SumOfRadialSineWaves(float x, float z)
+float SumOfRadialSineWaves(float _x, float _z)
 {
-	// Distance of vertex from source of waves (which we set
-	// as the origin of the local space).
-	float d = sqrt(x*x + z*z);
-	
+	float x, z, d;
 	// Sum the waves.
 	float sum = 0.0f;
-	for(int i = 0; i < 2; ++i)
-		sum += a[i]*sin(k[i]*d - dt*w[i] + p[i]);
+	float num_waves = 0.0f;
+	for(int j = 0; j < NUM_WAVE_GENS; ++j)
+	{
+		if( active[j]==1 )		//if this wave generator is active
+		{
+			// Distance of vertex from source of waves (which we set
+			// as the origin of the local space).
+			x = _x - c_x[j];
+			z = _z - c_z[j];
+			d = sqrt(x*x + z*z);
+		
+			sum += a[j]*sin(k[j]*d - dt*w[j] + p[j]);
+			num_waves = num_waves + 1.0f;
+		}
+	}
+	sum /= num_waves;
 	return sum;
 }
 
-void Partials(float x, float z, out float dhOverdx, out float dhOverdz)
+void Partials(float _x, float _z, out float dhOverdx, out float dhOverdz)
 {
-	float d=x*x+z*z;
-	if(d<0.01f)
-		dhOverdx=dhOverdz=0.0f;
-	else
+	float x, z, d;
+	dhOverdx=dhOverdz=0.0f;
+	float num_waves = 0.0f;
+	for(int j = 0; j < NUM_WAVE_GENS; j++)
 	{
-		d=sqrt(d);
-		dhOverdx=dhOverdz=0.0f;
-		for(int i = 0; i < 2; i++)
+		if( active[j]==1 )		//if this wave generator is active
 		{
-			dhOverdx += (a[i]*k[i]*x*cos(k[i]*d - dt*w[i] + p[i]))/d;
-			dhOverdz += (a[i]*k[i]*z*cos(k[i]*d - dt*w[i] + p[i]))/d;
+			x = _x - c_x[j];
+			z = _z - c_z[j];
+			d=x*x+z*z;
+			d = sqrt(d);
+		
+			if( d<0.01f )
+			{
+				dhOverdx = dhOverdz = 0.0f;
+			}
+
+			dhOverdx += (a[j]*k[j]*x*cos(k[j]*d - dt*w[j] + p[j]))/d;
+			dhOverdz += (a[j]*k[j]*z*cos(k[j]*d - dt*w[j] + p[j]))/d;
+			num_waves = num_waves + 1.0f;
 		}
 	}
+	dhOverdx /= num_waves;
+	dhOverdz /= num_waves;
 }
 
 void main()
@@ -62,7 +95,10 @@ void main()
 	Partials(pos.x, pos.z, dhOverDx, dhOverDz);
 	vec3 u = vec3(1.0, dhOverDx, 0.0);
 	vec3 v = vec3(0.0, dhOverDz, 1.0);
-	Normal = normalize( cross(u,v) );
+	Normal = normalize( cross(v,u) );
+
+	Tangent = normalize( u );
+	Binormal = normalize( v );
 
 	Position = pos;
     gl_Position = MVP * vec4(pos, 1.0);

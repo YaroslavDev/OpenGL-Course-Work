@@ -24,11 +24,13 @@
 #include "GLSLProgram.h"
 #include <fstream>
 #include <vector>
+#include <string>
 
 #define SAFE_DELETE(x) { if(x) { delete (x); (x)=NULL; } }
 
 #define SAFE_DELETE_ARRAY(x) { if(x) { delete[] (x); (x)=NULL; } }
 
+#define SAFE_ARRAY_SETVALUE(arr, size, index, val) { if( index>=0 && index<size ) { arr[index] = val; } }
 
 // control ids
 enum

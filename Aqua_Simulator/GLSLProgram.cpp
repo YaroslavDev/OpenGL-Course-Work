@@ -226,6 +226,33 @@ void GLSLProgram::setUniform( const char *name, bool val )
     }
 }
 
+void GLSLProgram::setUniformArray( const char *name, int count, float* data)
+{
+	int loc = getUniformLocation(name);
+    if( loc >= 0 ) 
+	{
+        glUniform1fv(loc, count, (const float*)data);
+    }
+}
+
+void GLSLProgram::setUniformArray( const char *name, int count, int* data)
+{
+	int loc = getUniformLocation(name);
+    if( loc >= 0 ) 
+	{
+        glUniform1iv(loc, count, data);
+    }
+}
+
+void GLSLProgram::setUniformArray( const char *name, int count, bool* data)
+{
+	int loc = getUniformLocation(name);
+    if( loc >= 0 ) 
+	{
+        glUniform3iv(loc, count, (const GLint*)data);
+    }
+}
+
 void GLSLProgram::printActiveUniforms() {
 
     GLint nUniforms, size, location, maxLen;

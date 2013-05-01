@@ -1,4 +1,15 @@
 Main objectives:
- *Take sample with 3D world
- *Implement free-walk camera
- *FPS timer
+ *Multiple random-wave aqua surface
+ *GUI for scene control:
+	*Aqua surface:
+		*Frequency
+		*Amplitude
+		*Speed
+	*Light:
+		*Intensity
+		*Color
+	*Other objects
+		*Animation speed
+		*Material properties
+ *Implement free-walk or orbit-eye camera
+ *Implement skybox

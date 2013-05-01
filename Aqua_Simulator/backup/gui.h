@@ -10,11 +10,11 @@
 
 #include <wx/artprov.h>
 #include <wx/xrc/xmlres.h>
-#include <wx/menu.h>
 #include <wx/string.h>
 #include <wx/bitmap.h>
 #include <wx/image.h>
 #include <wx/icon.h>
+#include <wx/menu.h>
 #include <wx/gdicmn.h>
 #include <wx/font.h>
 #include <wx/colour.h>
@@ -31,7 +31,12 @@
 
 ///////////////////////////////////////////////////////////////////////////
 
-#define ID_EXIT 1000
+#define ID_OPEN 1000
+#define ID_SAVE_AS 1001
+#define ID_SAVE 1002
+#define ID_EXIT 1003
+#define ID_HAMMER 1004
+#define ID_SPANNER 1005
 
 ///////////////////////////////////////////////////////////////////////////////
 /// Class BaseFrame
@@ -65,8 +70,13 @@ class BaseFrame : public wxFrame
 		wxStaticText* m_staticText27;
 		wxStaticText* m_staticText28;
 		wxStaticText* m_staticText29;
-		wxSpinCtrl* m_spinCtrl2;
-		
+		wxSpinCtrl* m_spinCtrl8;
+		wxStaticText* m_staticText21;
+		wxStaticLine* m_staticline3;
+		wxStaticText* m_staticText22;
+		wxStaticText* m_staticText23;
+		wxStaticText* m_staticText24;
+
 		//============================
 		//Add Double Spin Ctrls manually as long as they are not implemented in wxFormBuilder :(
 		wxSpinCtrlDouble* m_spinCtrlDouble1;
@@ -81,26 +91,12 @@ class BaseFrame : public wxFrame
 		//============================
 
 		// Virtual event handlers, overide them in your derived class
-		//Menubar callbacks
-		virtual void onLoadMeshClicked( wxCommandEvent& event )			{ event.Skip(); }
-		//Aqua menu callbacks
-		virtual void onCurrentWaveChanged( wxCommandEvent& event )		{ event.Skip(); }
-		virtual void onIsActiveChecked( wxCommandEvent& event )			{ event.Skip(); }
-		virtual void onFrequencyChanged( wxSpinDoubleEvent& event )		{ event.Skip(); }
-		virtual void onAmplitudeChanged( wxSpinDoubleEvent& event )		{ event.Skip(); }
-		virtual void onAngularNumberChanged( wxSpinDoubleEvent& event ) { event.Skip(); }
-		virtual void onPhaseChanged( wxSpinDoubleEvent& event )			{ event.Skip(); }
-		virtual void onWavePosXChanged( wxSpinDoubleEvent& event )		{ event.Skip(); }
-		virtual void onWavePosZChanged( wxSpinDoubleEvent& event )		{ event.Skip(); }
-		//Light menu callbacks
-		virtual void onLightPosXChanged( wxSpinDoubleEvent& event )		{ event.Skip(); }
-		virtual void onLightPosYChanged( wxSpinDoubleEvent& event )		{ event.Skip(); }
-		virtual void onLightPosZChanged( wxSpinDoubleEvent& event )		{ event.Skip(); }
-		virtual void onSpinCtrlValueChanged( wxSpinEvent& event )		{ event.Skip(); }
+		virtual void onLoadMeshClicked( wxCommandEvent& event ) { event.Skip(); }
+		
 	
 	public:
 		
-		BaseFrame( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = wxT("Aquatic Surface Simulator"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 640,487 ), long style = wxDEFAULT_FRAME_STYLE|wxTAB_TRAVERSAL );
+		BaseFrame( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = wxT("Aquatic Surface Simulator"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 582,487 ), long style = wxDEFAULT_FRAME_STYLE|wxTAB_TRAVERSAL );
 		
 		~BaseFrame();
 	

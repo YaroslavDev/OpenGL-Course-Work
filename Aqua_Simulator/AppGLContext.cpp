@@ -3,8 +3,9 @@
 AppGLContext::AppGLContext(wxGLCanvas	*canvas)
 	: wxGLContext(canvas),
 	mainFrame(NULL),
-	mesh(NULL),
-	aquaSurf(NULL)
+	seabed(NULL),
+	aquaSurf(NULL),
+	sky(NULL)
 {
 	SetCurrent(*canvas);
 
@@ -19,15 +20,48 @@ AppGLContext::AppGLContext(wxGLCanvas	*canvas)
 	
 	initShaders();
 
-	aquaSurf = new AquaSurface("aqua.jpg", 2.0f, 20);
+	seabed = new CMesh();
+	seabed->Create("seabed.obj");
+	seabed->setGLSLProgram(&prog);
+
+	aquaSurf = new AquaSurface("aqua.jpg", "aqua_nrm.png", 10.0f, 80);
+
+	sky = new SkyBox();
+	sky->loadCubeMap("texture/pos_x.jpg",
+					 "texture/neg_x.jpg",
+					 "texture/pos_y.jpg",
+					 "texture/neg_y.jpg",
+					 "texture/pos_z.jpg",
+					 "texture/neg_z.jpg");
+	sky->buildEffect("cubemap");
+
+	//Initialize light data
+	lightPos = glm::vec4(0.0f, 1.0f, 0.0f, 1.0f);
 
 	CheckGLError();
 }
 
 AppGLContext::~AppGLContext()
 {
-	SAFE_DELETE(mesh);
+	SAFE_DELETE(seabed);
 	SAFE_DELETE(aquaSurf);
+	SAFE_DELETE(sky);
+}
+
+void AppGLContext::updateAppFrame(int wave)
+{
+	//Update GUI according to glContext values
+	mainFrame->setIsActiveCheckBox( aquaSurf->getWaveActive(wave) );
+	mainFrame->setFrequencySpin( aquaSurf->getWaveFrequency(wave) );
+	mainFrame->setAmplitudeSpin( aquaSurf->getWaveAmplitude(wave) );
+	mainFrame->setAngularWaveSpin( aquaSurf->getWaveAngularNumber(wave) );
+	mainFrame->setPhaseSpin( aquaSurf->getWavePhase(wave) );
+	mainFrame->setWavePosXSpin( aquaSurf->getWavePosX(wave) );
+	mainFrame->setWavePosZSpin( aquaSurf->getWavePosZ(wave) );
+
+	mainFrame->setLightPosXSpin( lightPos.x );
+	mainFrame->setLightPosYSpin( lightPos.y );
+	mainFrame->setLightPosZSpin( lightPos.z );
 }
 
 void AppGLContext::initShaders()
@@ -78,42 +112,26 @@ void AppGLContext::initShaders()
         exit(1);
     }
 
-    prog.use();
-
 	glEnable(GL_DEPTH_TEST);
-
-	mesh = new CMesh();
-	mesh->Create("cup.obj");
 
     view = glm::lookAt(vec3(0.0f,1.25f,2.25f), vec3(0.0f,0.0f,0.0f), vec3(0.0f,1.0f,0.0f));
     projection = mat4(1.0f);
-
-    angle = 0.0;
-
-    prog.setUniform("Light.Intensity", vec3(2.0f,2.0f,2.0f) );
-
-    // Load texture file
-    const char * texName = "texture/brick1.jpg";
-	
-    // Copy file to OpenGL
-    glActiveTexture(GL_TEXTURE0); 
-	glBindTexture(GL_TEXTURE_2D, mesh->GetMaterial(2)->tex->GetTextureHandle());   
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    prog.setUniform("Tex1", 0);
 }
 void AppGLContext::setMatrices()
 {
-	mat4 mv = view * model;
-	prog.use();
-    prog.setUniform("ModelViewMatrix", mv);
-    prog.setUniform("NormalMatrix",
-                    mat3( vec3(mv[0]), vec3(mv[1]), vec3(mv[2]) ));
-    prog.setUniform("MVP", projection * mv);
-
+	if( seabed )
+	{
+		seabed->setViewProj(view, projection);
+		seabed->setLightPos(lightPos);
+	}
 	if( aquaSurf )
 	{
 		aquaSurf->setViewProj(view, projection);
+		aquaSurf->setLightPositon(lightPos);
+	}
+	if( sky )
+	{
+		sky->setViewProj(view, projection);
 	}
 }
 
@@ -134,14 +152,15 @@ void AppGLContext::setModulationColor(float r, float g, float b, float a)
 
 void AppGLContext::update(float dt)
 {
-	float angVel = 30.0f;
-	static float angle = 0.0f;
-	angle += angVel*dt;
+	static float eye_x = 0.0f, eye_z = 0.0f;
+	static float time = 0.0f;
+	time += dt;
 
-	model = mat4(1.0f);
-	//model *= glm::rotate(angle, vec3(0.0f,1.0f,0.0f));
-    model *= glm::rotate(angle, vec3(1.0f,0.0f,0.0f));
-    //model *= glm::rotate(angle, vec3(0.0f,0.0f,1.0f));
+	eye_x = 3.0f*cosf(0.25f*time);
+	eye_z = 3.0f*sinf(0.25f*time);
+
+	view = glm::lookAt(vec3(eye_x,1.25f,eye_z), vec3(0.0f,0.0f,0.0f), vec3(0.0f,1.0f,0.0f));
+
     setMatrices();
 
 	if( aquaSurf )
@@ -169,27 +188,19 @@ void AppGLContext::render()
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	prog.use();
-
-	glActiveTexture(GL_TEXTURE0); 
-	glBindTexture(GL_TEXTURE_2D, mesh->GetMaterial(2)->tex->GetTextureHandle());   
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    prog.setUniform("Tex1", 0);
-	
-    prog.setUniform("Light.Position", vec4(0.0f,0.0f,0.0f,1.0f) );
-    prog.setUniform("Material.Kd", 0.9f, 0.9f, 0.9f);
-    prog.setUniform("Material.Ks", 0.95f, 0.95f, 0.95f);
-    prog.setUniform("Material.Ka", 0.1f, 0.1f, 0.1f);
-    prog.setUniform("Material.Shininess", 100.0f);
-
-	prog.setUniform("MVP", projection * view * model);
-
-	mesh->Render();
+	if( seabed )
+	{
+		seabed->Render();
+	}
 
 	if( aquaSurf )
 	{
 		aquaSurf->render();
+	}
+
+	if( sky )
+	{
+		sky->render();
 	}
 
     CheckGLError();
@@ -197,5 +208,49 @@ void AppGLContext::render()
 
 void AppGLContext::reloadMesh(const char *filepath)
 {
-	mesh->Create(filepath);
+	seabed->Create(filepath);
+}
+
+//Aqua set methods
+void AppGLContext::setWaveActive(int wave, int isActive)
+{
+	aquaSurf->setWaveActive(wave, isActive);
+}
+void AppGLContext::setWaveFrequency(int wave, double f)
+{
+	aquaSurf->setWaveFrequency(wave, f);
+}
+void AppGLContext::setWaveAmplitude(int wave, double a)
+{
+	aquaSurf->setWaveAmplitude(wave, a);
+}
+void AppGLContext::setWaveAngularNumber(int wave, double an)
+{
+	aquaSurf->setWaveAngularNumber(wave, an);
+}
+void AppGLContext::setWavePhase(int wave, double ph)
+{
+	aquaSurf->setWavePhase(wave, ph);
+}
+void AppGLContext::setWavePosX(int wave, double x)
+{
+	aquaSurf->setWavePosX(wave, x);
+}
+void AppGLContext::setWavePosZ(int wave, double z)
+{
+	aquaSurf->setWavePosZ(wave, z);
+}
+
+//Light set methods
+void AppGLContext::setLightPosX(double x)
+{
+	lightPos.x = x;
+}
+void AppGLContext::setLightPosY(double y)
+{
+	lightPos.y = y;
+}
+void AppGLContext::setLightPosZ(double z)
+{
+	lightPos.z = z;
 }

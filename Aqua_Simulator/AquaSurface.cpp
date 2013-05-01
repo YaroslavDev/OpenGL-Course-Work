@@ -1,6 +1,8 @@
 #include "AquaSurface.h"
 
-AquaSurface::AquaSurface(const std::string& texname, float len, UINT nrows)
+AquaSurface::AquaSurface(const std::string& texname, 
+						const std::string& nrm_texname,
+						float len, UINT nrows)
 	: length(len), rows(nrows), tex(NULL), numIndices(0)
 {
 	tex = new cTexture();
@@ -10,13 +12,33 @@ AquaSurface::AquaSurface(const std::string& texname, float len, UINT nrows)
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
+	nrm_tex = new cTexture();
+	nrm_tex->LoadFromFile(nrm_texname);
+	/*glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, nrm_tex->GetTextureHandle());   
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);*/
+
 	buildEffect("aquasurf");
 	buildMesh();
+
+	//Initialize aqua data
+	waveActive[0] = 1;			waveActive[1] = 1;			waveActive[2] = 0;			waveActive[3] = 0; 
+	waveFrequency[0] = 3.0f;	waveFrequency[1] = 5.0f;	waveFrequency[2] = 1.0f;	waveFrequency[3] = 2.0f;
+	waveAmplitude[0] = 0.04f;	waveAmplitude[1] = 0.02f;	waveAmplitude[2] = 0.03f;	waveAmplitude[3] = 0.02f;
+	waveAngularNumber[0]=10.0f;	waveAngularNumber[1]=7.0f;	waveAngularNumber[2]=8.0f;	waveAngularNumber[3] = 9.0f;
+	wavePhase[0] = 0.0f;		wavePhase[1] = 0.2f;		wavePhase[2] = 0.3f;		wavePhase[3] = 0.4f;
+	wavePosX[0] = 0.0f;			wavePosX[1] = 1.5f;			wavePosX[2] = 0.0f;			wavePosX[3] = -1.5f;
+	wavePosZ[0] = 0.0f;			wavePosZ[1] = 0.0f;			wavePosZ[2] = -1.5f;		wavePosZ[3] = 0.0f;
+
+	//Initialize light data
+	lightpos = glm::vec4(0.0f, 1.0f, 0.0f, 1.0f);
 }
 
 AquaSurface::~AquaSurface()
 {
 	SAFE_DELETE(tex);
+	SAFE_DELETE(nrm_tex);
 	SAFE_DELETE_ARRAY(posCoords);
 	SAFE_DELETE_ARRAY(texCoords);
 	SAFE_DELETE_ARRAY(indices);
@@ -134,18 +156,12 @@ void AquaSurface::buildEffect(const std::string& effectname)
                prog.log().c_str());
         exit(1);
     }
-
-	//glEnable(GL_DEPTH_TEST);
 }
 
 void AquaSurface::setViewProj(const glm::mat4& _view, const glm::mat4& _proj)
 {
 	view = _view;
 	proj = _proj;
-
-	glm::mat4 pv = proj * view;
-	prog.use();
-	prog.setUniform("MVP", pv);
 }
 
 void AquaSurface::update(float dt)
@@ -160,19 +176,106 @@ void AquaSurface::render()
 {
 	prog.use();
 
+	glEnablei(GL_BLEND, 0);
+
+	glBlendEquationSeparate(GL_FUNC_ADD, GL_FUNC_ADD);
+	glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
+
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, tex->GetTextureHandle());
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	prog.setUniform("Tex1", 0);
 
-	prog.setUniform("Light.Intensity", vec3(2.0f,2.0f,2.0f) );
-	prog.setUniform("Light.Position", vec4(0.0f,2.0f,0.0f,1.0f) );
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, nrm_tex->GetTextureHandle());
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	prog.setUniform("NormalTex", 1);
+
+	prog.setUniform("Light.Intensity", vec3(1.0f, 1.0f, 1.0f) );
+	prog.setUniform("Light.Position", lightpos );
     prog.setUniform("Material.Kd", 0.9f, 0.9f, 0.9f);
-    prog.setUniform("Material.Ks", 0.95f, 0.95f, 0.95f);
+    prog.setUniform("Material.Ks", 1.0f, 1.0f, 1.0f);
     prog.setUniform("Material.Ka", 0.1f, 0.1f, 0.1f);
     prog.setUniform("Material.Shininess", 100.0f);
 
+	prog.setUniform("MVP", proj * view);
+
+	prog.setUniformArray("active", 4, waveActive);
+	prog.setUniformArray("w", 4, waveFrequency);
+	prog.setUniformArray("a", 4, waveAmplitude);
+	prog.setUniformArray("k", 4, waveAngularNumber);
+	prog.setUniformArray("p", 4, wavePhase);
+	prog.setUniformArray("c_x", 4, wavePosX);
+	prog.setUniformArray("c_z", 4, wavePosZ);
+
 	glBindVertexArray(meshHandle);
 	glDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, ((GLubyte *)NULL + (0)));
+
+	glDisablei(GL_BLEND, 0);
+}
+
+void AquaSurface::setLightPositon(const glm::vec4& lpos)
+{
+	lightpos = lpos;
+}
+
+//Aqua set methods
+void AquaSurface::setWaveActive(int wave, int isActive)
+{
+	SAFE_ARRAY_SETVALUE(waveActive, 4, wave, isActive);
+}
+void AquaSurface::setWaveFrequency(int wave, double f)
+{
+	SAFE_ARRAY_SETVALUE(waveFrequency, 4, wave, f);
+}
+void AquaSurface::setWaveAmplitude(int wave, double a)
+{
+	SAFE_ARRAY_SETVALUE(waveAmplitude, 4, wave, a);
+}
+void AquaSurface::setWaveAngularNumber(int wave, double an)
+{
+	SAFE_ARRAY_SETVALUE(waveAngularNumber, 4, wave, an);
+}
+void AquaSurface::setWavePhase(int wave, double ph)
+{
+	SAFE_ARRAY_SETVALUE(wavePhase, 4, wave, ph);
+}
+void AquaSurface::setWavePosX(int wave, double x)
+{
+	SAFE_ARRAY_SETVALUE(wavePosX, 4, wave, x);
+}
+void AquaSurface::setWavePosZ(int wave, double z)
+{
+	SAFE_ARRAY_SETVALUE(wavePosZ, 4, wave, z);
+}
+
+int AquaSurface::getWaveActive(int wave) const
+{
+	return waveActive[wave];
+}
+double AquaSurface::getWaveFrequency(int wave) const
+{
+	return waveFrequency[wave];
+}
+double AquaSurface::getWaveAmplitude(int wave) const
+{
+	return waveAmplitude[wave];
+}
+double AquaSurface::getWaveAngularNumber(int wave) const
+{
+	return waveAngularNumber[wave];
+}
+double AquaSurface::getWavePhase(int wave) const
+{
+	return wavePhase[wave];
+}
+double AquaSurface::getWavePosX(int wave) const
+{
+	return wavePosX[wave];
+}
+double AquaSurface::getWavePosZ(int wave) const
+{
+	return wavePosZ[wave];
 }

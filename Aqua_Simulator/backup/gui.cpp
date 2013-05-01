@@ -11,10 +11,22 @@
 
 BaseFrame::BaseFrame( wxWindow* parent, wxWindowID id, const wxString& title, const wxPoint& pos, const wxSize& size, long style ) : wxFrame( parent, id, title, pos, size, style )
 {
-	this->SetSizeHints( wxSize( 640,480 ), wxDefaultSize );
+	this->SetSizeHints( wxDefaultSize, wxDefaultSize );
 	
 	m_menubar1 = new wxMenuBar( 0 );
 	file = new wxMenu();
+	wxMenuItem* open;
+	open = new wxMenuItem( file, ID_OPEN, wxString( wxT("Open") ) , wxEmptyString, wxITEM_NORMAL );
+	file->Append( open );
+	
+	wxMenuItem* saveAs;
+	saveAs = new wxMenuItem( file, ID_SAVE_AS, wxString( wxT("Save As") ) , wxEmptyString, wxITEM_NORMAL );
+	file->Append( saveAs );
+	
+	wxMenuItem* save;
+	save = new wxMenuItem( file, ID_SAVE, wxString( wxT("Save") ) , wxEmptyString, wxITEM_NORMAL );
+	file->Append( save );
+	
 	file->AppendSeparator();
 	
 	wxMenuItem* exit;
@@ -24,6 +36,14 @@ BaseFrame::BaseFrame( wxWindow* parent, wxWindowID id, const wxString& title, co
 	m_menubar1->Append( file, wxT("File") ); 
 	
 	tools = new wxMenu();
+	wxMenuItem* hammer;
+	hammer = new wxMenuItem( tools, ID_HAMMER, wxString( wxT("Hammer") ) , wxEmptyString, wxITEM_NORMAL );
+	tools->Append( hammer );
+	
+	wxMenuItem* spanner;
+	spanner = new wxMenuItem( tools, ID_SPANNER, wxString( wxT("Spanner") ) , wxEmptyString, wxITEM_NORMAL );
+	tools->Append( spanner );
+	
 	wxMenuItem* m_menuItem7;
 	m_menuItem7 = new wxMenuItem( tools, wxID_ANY, wxString( wxT("Load Mesh") ) , wxEmptyString, wxITEM_NORMAL );
 	tools->Append( m_menuItem7 );
@@ -76,6 +96,7 @@ BaseFrame::BaseFrame( wxWindow* parent, wxWindowID id, const wxString& title, co
 	m_comboBox2->Append( wxT("2") );
 	m_comboBox2->Append( wxT("3") );
 	m_comboBox2->Append( wxT("4") );
+	m_comboBox2->Append( wxT("5") );
 	m_comboBox2->SetSelection( 0 );
 	fgSizer7->Add( m_comboBox2, 0, wxALL, 5 );
 	
@@ -90,42 +111,42 @@ BaseFrame::BaseFrame( wxWindow* parent, wxWindowID id, const wxString& title, co
 	m_staticText9->Wrap( -1 );
 	fgSizer7->Add( m_staticText9, 0, wxALL, 5 );
 
-	m_spinCtrlDouble1 = new wxSpinCtrlDouble( m_panel1, wxID_ANY, wxT(""), wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 0.5, 10, 0.5, 0.5 );
+	m_spinCtrlDouble1 = new wxSpinCtrlDouble( m_panel1, wxID_ANY, wxT(""), wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 0, 10, 0, 0.5 );
 	fgSizer7->Add( m_spinCtrlDouble1, 0, wxALL, 5 );
 	
 	m_staticText11 = new wxStaticText( m_panel1, wxID_ANY, wxT("Amplitude"), wxDefaultPosition, wxDefaultSize, 0 );
 	m_staticText11->Wrap( -1 );
 	fgSizer7->Add( m_staticText11, 0, wxALL, 5 );
 
-	m_spinCtrlDouble2 = new wxSpinCtrlDouble( m_panel1, wxID_ANY, wxT(""), wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 0.002, 0.1, 0.002, 0.002 );
+	m_spinCtrlDouble2 = new wxSpinCtrlDouble( m_panel1, wxID_ANY, wxT(""), wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 0, 10, 0, 0.5 );
 	fgSizer7->Add( m_spinCtrlDouble2, 0, wxALL, 5 );
 	
 	m_staticText12 = new wxStaticText( m_panel1, wxID_ANY, wxT("Angular wave number"), wxDefaultPosition, wxDefaultSize, 0 );
 	m_staticText12->Wrap( -1 );
 	fgSizer7->Add( m_staticText12, 0, wxALL, 5 );
-
-	m_spinCtrlDouble3 = new wxSpinCtrlDouble( m_panel1, wxID_ANY, wxT(""), wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 1, 20, 1, 1.0 );
-	fgSizer7->Add( m_spinCtrlDouble3, 0, wxALL, 5 );
 	
+	m_spinCtrlDouble3 = new wxSpinCtrlDouble( m_panel1, wxID_ANY, wxT(""), wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 0, 10, 0, 0.5 );
+	fgSizer7->Add( m_spinCtrlDouble3, 0, wxALL, 5 );
+
 	m_staticText13 = new wxStaticText( m_panel1, wxID_ANY, wxT("Phase"), wxDefaultPosition, wxDefaultSize, 0 );
 	m_staticText13->Wrap( -1 );
 	fgSizer7->Add( m_staticText13, 0, wxALL, 5 );
 
-	m_spinCtrlDouble4 = new wxSpinCtrlDouble( m_panel1, wxID_ANY, wxT(""), wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 0, 10, 0, 0.1 );
+	m_spinCtrlDouble4 = new wxSpinCtrlDouble( m_panel1, wxID_ANY, wxT(""), wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 0, 10, 0, 0.5 );
 	fgSizer7->Add( m_spinCtrlDouble4, 0, wxALL, 5 );
 	
 	m_staticText19 = new wxStaticText( m_panel1, wxID_ANY, wxT("Position_X"), wxDefaultPosition, wxDefaultSize, 0 );
 	m_staticText19->Wrap( -1 );
 	fgSizer7->Add( m_staticText19, 0, wxALL, 5 );
-
-	m_spinCtrlDouble5 = new wxSpinCtrlDouble( m_panel1, wxID_ANY, wxT(""), wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, -10, 10, 0, 0.1 );
-	fgSizer7->Add( m_spinCtrlDouble5, 0, wxALL, 5 );
 	
+	m_spinCtrlDouble5 = new wxSpinCtrlDouble( m_panel1, wxID_ANY, wxT(""), wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 0, 10, 0, 0.5 );
+	fgSizer7->Add( m_spinCtrlDouble5, 0, wxALL, 5 );
+
 	m_staticText20 = new wxStaticText( m_panel1, wxID_ANY, wxT("Position_Z"), wxDefaultPosition, wxDefaultSize, 0 );
 	m_staticText20->Wrap( -1 );
 	fgSizer7->Add( m_staticText20, 0, wxALL, 5 );
 
-	m_spinCtrlDouble6 = new wxSpinCtrlDouble( m_panel1, wxID_ANY, wxT(""), wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, -10, 10, 0, 0.1 );
+	m_spinCtrlDouble6 = new wxSpinCtrlDouble( m_panel1, wxID_ANY, wxT(""), wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 0, 10, 0, 0.5 );
 	fgSizer7->Add( m_spinCtrlDouble6, 0, wxALL, 5 );
 	
 	
@@ -147,29 +168,29 @@ BaseFrame::BaseFrame( wxWindow* parent, wxWindowID id, const wxString& title, co
 	m_staticText26->Wrap( -1 );
 	fgSizer3->Add( m_staticText26, 0, wxALL, 5 );
 
-	m_spinCtrlDouble7 = new wxSpinCtrlDouble( m_panel1, wxID_ANY, wxT(""), wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, -10, 10, 0, 0.1 );
+	m_spinCtrlDouble7 = new wxSpinCtrlDouble( m_panel1, wxID_ANY, wxT(""), wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 0, 10, 0, 0.5 );
 	fgSizer3->Add( m_spinCtrlDouble7, 0, wxALL, 5 );
 	
 	m_staticText27 = new wxStaticText( m_panel1, wxID_ANY, wxT("Pos Y"), wxDefaultPosition, wxDefaultSize, 0 );
 	m_staticText27->Wrap( -1 );
 	fgSizer3->Add( m_staticText27, 0, wxALL, 5 );
 
-	m_spinCtrlDouble8 = new wxSpinCtrlDouble( m_panel1, wxID_ANY, wxT(""), wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, -10, 10, 0, 0.1 );
+	m_spinCtrlDouble8 = new wxSpinCtrlDouble( m_panel1, wxID_ANY, wxT(""), wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 0, 10, 0, 0.5 );
 	fgSizer3->Add( m_spinCtrlDouble8, 0, wxALL, 5 );
 	
 	m_staticText28 = new wxStaticText( m_panel1, wxID_ANY, wxT("Pos Z"), wxDefaultPosition, wxDefaultSize, 0 );
 	m_staticText28->Wrap( -1 );
 	fgSizer3->Add( m_staticText28, 0, wxALL, 5 );
 
-	m_spinCtrlDouble9 = new wxSpinCtrlDouble( m_panel1, wxID_ANY, wxT(""), wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, -10, 10, 0, 0.1 );
+	m_spinCtrlDouble9 = new wxSpinCtrlDouble( m_panel1, wxID_ANY, wxT(""), wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 0, 10, 0, 0.5 );
 	fgSizer3->Add( m_spinCtrlDouble9, 0, wxALL, 5 );
 	
 	m_staticText29 = new wxStaticText( m_panel1, wxID_ANY, wxT("Intensity"), wxDefaultPosition, wxDefaultSize, 0 );
 	m_staticText29->Wrap( -1 );
 	fgSizer3->Add( m_staticText29, 0, wxALL, 5 );
 	
-	m_spinCtrl2 = new wxSpinCtrl( m_panel1, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 0, 10, 0 );
-	fgSizer3->Add( m_spinCtrl2, 0, wxALL, 5 );
+	m_spinCtrl8 = new wxSpinCtrl( m_panel1, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 0, 10, 0 );
+	fgSizer3->Add( m_spinCtrl8, 0, wxALL, 5 );
 	
 	
 	bSizer6->Add( fgSizer3, 1, wxEXPAND, 5 );
@@ -179,6 +200,39 @@ BaseFrame::BaseFrame( wxWindow* parent, wxWindowID id, const wxString& title, co
 	
 	
 	bSizer2->Add( bSizer3, 1, wxEXPAND, 5 );
+	
+	wxBoxSizer* bSizer4;
+	bSizer4 = new wxBoxSizer( wxVERTICAL );
+	
+	m_staticText21 = new wxStaticText( m_panel1, wxID_ANY, wxT("Light Menu"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_staticText21->Wrap( -1 );
+	bSizer4->Add( m_staticText21, 0, wxALL, 5 );
+	
+	m_staticline3 = new wxStaticLine( m_panel1, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxLI_HORIZONTAL );
+	bSizer4->Add( m_staticline3, 0, wxALL|wxEXPAND, 5 );
+	
+	wxFlexGridSizer* fgSizer2;
+	fgSizer2 = new wxFlexGridSizer( 0, 2, 0, 0 );
+	fgSizer2->SetFlexibleDirection( wxBOTH );
+	fgSizer2->SetNonFlexibleGrowMode( wxFLEX_GROWMODE_SPECIFIED );
+	
+	m_staticText22 = new wxStaticText( m_panel1, wxID_ANY, wxT("Position X"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_staticText22->Wrap( -1 );
+	fgSizer2->Add( m_staticText22, 0, wxALL, 5 );
+	
+	m_staticText23 = new wxStaticText( m_panel1, wxID_ANY, wxT("Position Y"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_staticText23->Wrap( -1 );
+	fgSizer2->Add( m_staticText23, 0, wxALL, 5 );
+	
+	m_staticText24 = new wxStaticText( m_panel1, wxID_ANY, wxT("Position Z"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_staticText24->Wrap( -1 );
+	fgSizer2->Add( m_staticText24, 0, wxALL, 5 );
+	
+	
+	bSizer4->Add( fgSizer2, 1, wxEXPAND, 5 );
+	
+	
+	bSizer2->Add( bSizer4, 0, wxEXPAND, 5 );
 	
 	
 	m_panel1->SetSizer( bSizer2 );
@@ -194,28 +248,11 @@ BaseFrame::BaseFrame( wxWindow* parent, wxWindowID id, const wxString& title, co
 	
 	// Connect Events
 	this->Connect( m_menuItem7->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( BaseFrame::onLoadMeshClicked ) );
-	//Aqua menu
-	m_comboBox2->Connect( wxEVT_COMMAND_COMBOBOX_SELECTED, wxCommandEventHandler( BaseFrame::onCurrentWaveChanged ), NULL, this );
-	m_checkBox1->Connect( wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler( BaseFrame::onIsActiveChecked ), NULL, this );
-	m_spinCtrlDouble1->Connect( wxEVT_COMMAND_SPINCTRLDOUBLE_UPDATED, wxSpinDoubleEventHandler( BaseFrame::onFrequencyChanged ), NULL, this);
-	m_spinCtrlDouble2->Connect( wxEVT_COMMAND_SPINCTRLDOUBLE_UPDATED, wxSpinDoubleEventHandler( BaseFrame::onAmplitudeChanged ), NULL, this);
-	m_spinCtrlDouble3->Connect( wxEVT_COMMAND_SPINCTRLDOUBLE_UPDATED, wxSpinDoubleEventHandler( BaseFrame::onAngularNumberChanged ), NULL, this);
-	m_spinCtrlDouble4->Connect( wxEVT_COMMAND_SPINCTRLDOUBLE_UPDATED, wxSpinDoubleEventHandler( BaseFrame::onPhaseChanged ), NULL, this);
-	m_spinCtrlDouble5->Connect( wxEVT_COMMAND_SPINCTRLDOUBLE_UPDATED, wxSpinDoubleEventHandler( BaseFrame::onWavePosXChanged ), NULL, this);
-	m_spinCtrlDouble6->Connect( wxEVT_COMMAND_SPINCTRLDOUBLE_UPDATED, wxSpinDoubleEventHandler( BaseFrame::onWavePosZChanged ), NULL, this);
-	//Light menu
-	m_spinCtrlDouble7->Connect( wxEVT_COMMAND_SPINCTRLDOUBLE_UPDATED, wxSpinDoubleEventHandler( BaseFrame::onLightPosXChanged ), NULL, this);
-	m_spinCtrlDouble8->Connect( wxEVT_COMMAND_SPINCTRLDOUBLE_UPDATED, wxSpinDoubleEventHandler( BaseFrame::onLightPosYChanged ), NULL, this);
-	m_spinCtrlDouble9->Connect( wxEVT_COMMAND_SPINCTRLDOUBLE_UPDATED, wxSpinDoubleEventHandler( BaseFrame::onLightPosZChanged ), NULL, this);
-
-	m_spinCtrl2->Connect( wxEVT_COMMAND_SPINCTRL_UPDATED, wxSpinEventHandler( BaseFrame::onSpinCtrlValueChanged ), NULL, this );
 }
 
 BaseFrame::~BaseFrame()
 {
 	// Disconnect Events
 	this->Disconnect( wxID_ANY, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( BaseFrame::onLoadMeshClicked ) );
-	m_checkBox1->Disconnect( wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler( BaseFrame::onIsActiveChecked ), NULL, this );
-	m_spinCtrl2->Disconnect( wxEVT_COMMAND_SPINCTRL_UPDATED, wxSpinEventHandler( BaseFrame::onSpinCtrlValueChanged ), NULL, this );
 	
 }

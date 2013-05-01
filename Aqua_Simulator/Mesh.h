@@ -44,6 +44,21 @@ public:
         return m_strMediaDir;
     }
 
+	void	setGLSLProgram(GLSLProgram	*p)
+	{
+		prog = p;
+	}
+
+	void	setViewProj(const glm::mat4& v, const glm::mat4& p)
+	{
+		view = v;
+		proj = p;
+	}
+	void	setWorld(const glm::mat4& w)
+	{
+		world = w;
+	}
+	void	setLightPos(const glm::vec4& lpos);
 private:
 
     int		LoadGeometryFromOBJ( const char* strFilename );
@@ -65,7 +80,14 @@ private:
     std::vector<DWORD> m_Attributes;			// Filled and copied to the attribute buffer
     std::vector<Material*> m_Materials;			// Holds material properties per subset
 
-    char   m_strMediaDir[ MAX_PATH ];          // Directory where the mesh was found
+    char   m_strMediaDir[ MAX_PATH ];			// Directory where the mesh was found
+	GLSLProgram	*prog;							// Assign to this mesh GLSL program
+	//View Proj data
+	glm::mat4 world;
+	glm::mat4 view;
+	glm::mat4 proj;
+	//Light data
+	glm::vec4 lightpos;
 };
 
 #endif // _MESH_H_

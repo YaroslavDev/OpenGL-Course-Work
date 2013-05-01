@@ -55,6 +55,9 @@ public:
     void   setUniform( const char *name, float val );
     void   setUniform( const char *name, int val );
     void   setUniform( const char *name, bool val );
+	void   setUniformArray( const char *name, int count, float* data);
+	void   setUniformArray( const char *name, int count, int* data);
+	void   setUniformArray( const char *name, int count, bool* data);
 
     void   printActiveUniforms();
     void   printActiveAttribs();

@@ -15,7 +15,6 @@ bool BaseApp::OnInit()
 	glContext = new AppGLContext(mainframe->getGLCanvas());
 	glContext->SetCurrent(*mainframe->getGLCanvas());
 	glContext->setAppFrame(mainframe);
-	glContext->updateAppFrame(0);
 	mainframe->getGLCanvas()->setGLContext(glContext);
 
 	mainframe->Show();

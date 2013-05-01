@@ -3,6 +3,8 @@
 in vec3 Position;
 in vec2 TexCoord;
 in vec3 Normal;
+in vec3 Tangent;
+in vec3 Binormal;
 
 struct LightInfo {
   vec4 Position;  // Light position in eye coords.
@@ -19,6 +21,7 @@ struct MaterialInfo {
 uniform MaterialInfo Material;
 
 uniform sampler2D Tex1;
+uniform sampler2D NormalTex;
 
 layout( location = 0 ) out vec4 FragColor;
 
@@ -43,4 +46,5 @@ void main()
     vec4 texColor = texture( Tex1, TexCoord );
     phongModel( Position, Normal, ambAndDiff, spec );
     FragColor = (vec4( ambAndDiff, 1.0 ) * texColor) + vec4(spec,1.0);
+	FragColor.a = 0.8f;
 }
